@@ -1,0 +1,27 @@
+# Local test stack — no Caddy/HTTPS. The web app is served directly on
+# http://localhost:8000.  Run with:
+#   docker compose -f docker-compose.local.yml up --build
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_PATH: /data/app.db
+    ports:
+      - "8000:8000"
+    volumes:
+      - db-data:/data
+
+  bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_PATH: /data/app.db
+    command: ["python", "bot.py"]
+    volumes:
+      - db-data:/data
+
+volumes:
+  db-data:

@@ -1,0 +1,22 @@
+# secrets / config
+.env
+
+# database
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# node / frontend build
+node_modules/
+frontend/dist/
+
+# misc
+.DS_Store
+*.log

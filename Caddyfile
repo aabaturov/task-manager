@@ -1,0 +1,6 @@
+# Caddy automatically obtains and renews a Let's Encrypt certificate for
+# {$DOMAIN}. All traffic is reverse-proxied to the web service over HTTPS.
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy web:8000
+}
