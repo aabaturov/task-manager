@@ -16,9 +16,17 @@ from telegram.ext import (
     filters,
 )
 
+from sqlalchemy import func
+
 from app.config import settings
 from app.database import SessionLocal, init_db
 from app.models import Project, Task
+
+
+def _label(project: Project) -> str:
+    """Project name prefixed with its emoji icon when present (SPEC-001 F1)."""
+    icon = (project.icon or "").strip()
+    return f"{icon} {project.name}".strip() if icon else project.name
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -63,7 +71,7 @@ async def receive_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             )
             return
         buttons = [
-            [InlineKeyboardButton(p.name, callback_data=f"pick:{p.id}")]
+            [InlineKeyboardButton(_label(p), callback_data=f"pick:{p.id}")]
             for p in projects
         ]
 
@@ -91,11 +99,17 @@ async def pick_project(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         if project is None:
             await query.edit_message_text("Проект больше не существует.")
             return
-        db.add(Task(project_id=project_id, text=text))
+        max_pos = (
+            db.query(func.max(Task.position))
+            .filter(Task.project_id == project_id)
+            .scalar()
+        )
+        position = 0 if max_pos is None else max_pos + 1
+        db.add(Task(project_id=project_id, text=text, position=position))
         db.commit()
-        project_name = project.name
+        project_label = _label(project)
 
-    await query.edit_message_text(f"✅ Сохранено в «{project_name}»:\n«{text}»")
+    await query.edit_message_text(f"✅ Сохранено в «{project_label}»:\n«{text}»")
 
 
 async def tasks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -130,13 +144,13 @@ async def _send_task_list(send) -> None:
             project_tasks = (
                 db.query(Task)
                 .filter(Task.project_id == project.id)
-                .order_by(Task.created_at)
+                .order_by(Task.position)
                 .all()
             )
             if not project_tasks:
                 continue
             has_any = True
-            lines.append(f"\n📁 {project.name}")
+            lines.append(f"\n📁 {_label(project)}")
             for task in project_tasks:
                 lines.append(f"  • {task.text}")
                 buttons.append(

@@ -1,16 +1,42 @@
 import React, { useEffect, useState } from "react";
 import { api } from "./api.js";
+import ProjectPanel from "./ProjectPanel.jsx";
+import DayPanel from "./DayPanel.jsx";
+
+function HeaderClock() {
+  // Isolated so the per-second tick does not re-render the whole board.
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <div className="clock" title="Локальные дата и время">
+      {now.toLocaleString()}
+    </div>
+  );
+}
 
 export default function Board({ onLoggedOut }) {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [slots, setSlots] = useState([
+    { index: 0, task_ids: [] },
+    { index: 1, task_ids: [] },
+    { index: 2, task_ids: [] },
+  ]);
   const [error, setError] = useState("");
 
   async function reload() {
     try {
-      const [p, t] = await Promise.all([api.listProjects(), api.listTasks()]);
+      const [p, t, s] = await Promise.all([
+        api.listProjects(),
+        api.listTasks(),
+        api.getDaySlots(),
+      ]);
       setProjects(p);
       setTasks(t);
+      setSlots(s);
     } catch (err) {
       if (err.status === 401) onLoggedOut();
       else setError(err.message);
@@ -25,10 +51,20 @@ export default function Board({ onLoggedOut }) {
     const name = window.prompt("Название проекта:");
     if (!name || !name.trim()) return;
     try {
-      await api.createProject(name.trim());
+      await api.createProject(name.trim(), null, "local");
       reload();
     } catch (err) {
       alert(err.message);
+    }
+  }
+
+  async function updateProject(id, patch) {
+    try {
+      await api.updateProject(id, patch);
+      await reload();
+    } catch (err) {
+      alert(err.message);
+      throw err;
     }
   }
 
@@ -44,8 +80,23 @@ export default function Board({ onLoggedOut }) {
     reload();
   }
 
+  async function updateTask(id, patch) {
+    await api.updateTask(id, patch);
+    await reload();
+  }
+
   async function removeTask(taskId) {
     await api.deleteTask(taskId);
+    reload();
+  }
+
+  async function reorder(projectId, taskIds) {
+    await api.reorderTasks(projectId, taskIds);
+    reload();
+  }
+
+  async function saveSlot(index, taskIds) {
+    await api.setDaySlot(index, taskIds);
     reload();
   }
 
@@ -54,97 +105,81 @@ export default function Board({ onLoggedOut }) {
     onLoggedOut();
   }
 
+  // ----- board organisation (SPEC-001 Feature 6) --------------------------
+  // Pinned zone: day panel (always first) + pinned projects (order of pinning).
+  // Normal board below: unpinned projects, local then global.
+  const pinned = projects
+    .filter((p) => p.pinned)
+    .sort((a, b) => (a.pinned_at || "").localeCompare(b.pinned_at || ""));
+  const local = projects.filter((p) => !p.pinned && p.type === "local");
+  const global = projects.filter((p) => !p.pinned && p.type === "global");
+  const showGroupHeaders = local.length > 0 && global.length > 0;
+
+  function renderPanel(project) {
+    return (
+      <ProjectPanel
+        key={project.id}
+        project={project}
+        tasks={tasks.filter((t) => t.project_id === project.id)}
+        onAddTask={addTask}
+        onUpdateTask={updateTask}
+        onRemoveTask={removeTask}
+        onReorder={reorder}
+        onUpdateProject={updateProject}
+        onRemoveProject={removeProject}
+      />
+    );
+  }
+
+  function renderGroup(title, items) {
+    if (items.length === 0) return null;
+    return (
+      <div className="section">
+        {showGroupHeaders && <h2 className="section-title">{title}</h2>}
+        <div className="board">{items.map(renderPanel)}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       <header className="topbar">
         <h1>Менеджер задач</h1>
-        <div className="topbar-actions">
-          <button onClick={addProject}>+ Проект</button>
-          <button className="ghost" onClick={logout}>
-            Выйти
-          </button>
+        <div className="topbar-right">
+          <HeaderClock />
+          <div className="topbar-actions">
+            <button onClick={addProject}>+ Проект</button>
+            <button className="ghost" onClick={logout}>
+              Выйти
+            </button>
+          </div>
         </div>
       </header>
 
       {error && <div className="error">{error}</div>}
 
-      {projects.length === 0 ? (
+      {/* Pinned zone — always present, day panel is its first element. */}
+      <div className="pinned-zone">
+        <DayPanel
+          slots={slots}
+          projects={projects}
+          tasks={tasks}
+          onSave={saveSlot}
+        />
+        {pinned.map(renderPanel)}
+      </div>
+
+      {/* Normal board below the zone. */}
+      <div className="normal-board">
+        {renderGroup("Локальные", local)}
+        {renderGroup("Глобальные", global)}
+      </div>
+
+      {projects.length === 0 && (
         <div className="empty muted">
           Пока нет проектов. Создай первый кнопкой «+ Проект».
         </div>
-      ) : (
-        <div className="board">
-          {projects.map((project) => (
-            <ProjectPanel
-              key={project.id}
-              project={project}
-              tasks={tasks.filter((t) => t.project_id === project.id)}
-              onAddTask={addTask}
-              onRemoveTask={removeTask}
-              onRemoveProject={removeProject}
-            />
-          ))}
-        </div>
       )}
     </div>
-  );
-}
-
-function ProjectPanel({
-  project,
-  tasks,
-  onAddTask,
-  onRemoveTask,
-  onRemoveProject,
-}) {
-  const [text, setText] = useState("");
-
-  async function submit(e) {
-    e.preventDefault();
-    const value = text.trim();
-    if (!value) return;
-    setText("");
-    await onAddTask(project.id, value);
-  }
-
-  return (
-    <section className="panel">
-      <div className="panel-head">
-        <h2 title={project.name}>{project.name}</h2>
-        <button
-          className="icon"
-          title="Удалить проект"
-          onClick={() => onRemoveProject(project)}
-        >
-          ×
-        </button>
-      </div>
-
-      <ul className="tasks">
-        {tasks.map((task) => (
-          <li key={task.id}>
-            <span>{task.text}</span>
-            <button
-              className="icon"
-              title="Удалить задачу"
-              onClick={() => onRemoveTask(task.id)}
-            >
-              ×
-            </button>
-          </li>
-        ))}
-        {tasks.length === 0 && <li className="muted empty-task">Нет задач</li>}
-      </ul>
-
-      <form className="add-task" onSubmit={submit}>
-        <input
-          type="text"
-          placeholder="Добавить задачу…"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-        />
-        <button type="submit">+</button>
-      </form>
-    </section>
   );
 }

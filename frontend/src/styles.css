@@ -6,6 +6,8 @@
   --muted: #8a8f98;
   --accent: #3b6ef5;
   --danger: #e5484d;
+  --warn: #e08600;
+  --gold: #e6a700;
 }
 
 * {
@@ -18,6 +20,11 @@ body {
     Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
+}
+
+body.dragging-active {
+  user-select: none;
+  cursor: grabbing;
 }
 
 button {
@@ -45,29 +52,45 @@ button.ghost {
   background: transparent;
 }
 
+button.small {
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
 button.icon {
   border: none;
   background: transparent;
   color: var(--muted);
-  font-size: 20px;
+  font-size: 17px;
   line-height: 1;
-  padding: 2px 8px;
+  padding: 2px 6px;
 }
 
 button.icon:hover {
-  color: var(--danger);
+  color: var(--accent);
 }
 
-input {
+button.icon.on {
+  color: var(--accent);
+}
+
+button.icon.star.on {
+  color: var(--gold);
+}
+
+input,
+select {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 9px 12px;
   font-size: 14px;
   width: 100%;
   outline: none;
+  background: #fff;
 }
 
-input:focus {
+input:focus,
+select:focus {
   border-color: var(--accent);
 }
 
@@ -112,7 +135,7 @@ input:focus {
   text-align: center;
 }
 
-/* ---------- app ---------- */
+/* ---------- app shell ---------- */
 .app {
   max-width: 1200px;
   margin: 0 auto;
@@ -133,6 +156,20 @@ input:focus {
   margin: 0;
 }
 
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.clock {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
 .topbar-actions {
   display: flex;
   gap: 8px;
@@ -143,7 +180,91 @@ input:focus {
   text-align: center;
 }
 
-/* ---------- board ---------- */
+/* ---------- pinned zone (SPEC-001 F6): day panel + pinned projects ------ */
+.pinned-zone {
+  background: #e9ecf1;
+  border-radius: 16px;
+  padding: 12px;
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.normal-board {
+  display: block;
+}
+
+/* ---------- day panel (SPEC-001 F8): yellow card, vertical slots -------- */
+.day-panel {
+  background: #fff8e1; /* soft warm yellow — only the panel is tinted */
+  border: 1px solid #f0e2ad;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.day-title {
+  margin: 0;
+  font-size: 16px;
+}
+
+.slots {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.slot {
+  border: 1px solid #efe3b8;
+  border-radius: 10px;
+  padding: 10px;
+  background: #fffdf5;
+  min-height: 70px;
+}
+
+.slot-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.slot-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.slot-tasks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.slot-tasks li.done {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+/* ---------- board sections ---------- */
+.section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 15px;
+  color: var(--muted);
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+
 .board {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -174,8 +295,67 @@ input:focus {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
+.proj-icon {
+  font-size: 18px;
+}
+
+.panel-head-actions {
+  display: flex;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+/* ---------- project editor ---------- */
+.project-editor {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.project-editor label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.icon-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.icon-input {
+  width: 70px;
+}
+
+button.emoji {
+  padding: 4px 8px;
+  font-size: 16px;
+}
+
+button.emoji.sel {
+  border-color: var(--accent);
+  background: #eaf0ff;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---------- tasks ---------- */
 .tasks {
   list-style: none;
   margin: 0;
@@ -185,24 +365,132 @@ input:focus {
   gap: 6px;
 }
 
-.tasks li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+.task {
   background: var(--bg);
   border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 14px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
 }
 
-.tasks li span {
+.task.important {
+  border-color: var(--gold);
+  background: #fff9e6;
+}
+
+.task.overdue {
+  border-color: var(--danger);
+}
+
+.task.dragging {
+  opacity: 0.5;
+  border-style: dashed;
+  border-color: var(--accent);
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.drag-handle {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: grab;
+  padding: 0 2px;
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: -2px;
+  touch-action: none;
+}
+
+.check {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: #fff;
+  padding: 0;
+  font-size: 13px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.check.checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.task-text {
+  flex: 1;
   word-break: break-word;
+  font-size: 14px;
+  cursor: text;
+}
+
+.task.done .task-text {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.task-edit {
+  flex: 1;
+  padding: 4px 8px;
+}
+
+.task-actions {
+  display: flex;
+  gap: 0;
+  flex: 0 0 auto;
+}
+
+.task-error {
+  color: var(--danger);
+  font-size: 12px;
+  margin: 4px 0 0 26px;
+}
+
+.task-deadline {
+  margin: 4px 0 0 26px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.deadline-badge {
+  color: var(--warn);
+  background: #fff3e0;
+  border-radius: 6px;
+  padding: 1px 8px;
+}
+
+.deadline-badge.overdue {
+  color: var(--danger);
+  background: #fdecec;
+}
+
+.deadline-edit {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.deadline-edit input {
+  width: auto;
+  padding: 4px 8px;
 }
 
 .empty-task {
   background: transparent !important;
+  border: none !important;
   font-size: 13px;
+  padding: 4px 8px;
 }
 
 .add-task {
@@ -221,9 +509,77 @@ input:focus {
   padding: 0;
 }
 
-/* ---------- responsive: stack panels on phones ---------- */
+/* ---------- modal (slot editor) ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 50;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.modal-body {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.select-group-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.select-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 14px;
+}
+
+.select-row input {
+  width: auto;
+}
+
+.select-row .done {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* ---------- responsive: stack on phones ---------- */
 @media (max-width: 640px) {
   .board {
+    grid-template-columns: 1fr;
+  }
+  /* Zone collapses to a column: day panel on top, then pinned projects. */
+  .pinned-zone {
     grid-template-columns: 1fr;
   }
 }
