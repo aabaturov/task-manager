@@ -17,6 +17,14 @@ venv/
 node_modules/
 frontend/dist/
 
+# secrets — server credentials must never be committed
+server.txt
+
+# local scratch / working files (not part of the project)
+drop/
+frontend-snapshot.md
+agent-system-changes.md
+
 # misc
 .DS_Store
 *.log
