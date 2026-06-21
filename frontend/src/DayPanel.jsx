@@ -43,7 +43,6 @@ export default function DayPanel({ slots, projects, tasks, onUpdateTask, onSave 
                     <li
                       key={task.id}
                       className={"slot-task" + (task.done ? " done" : "")}
-                      title={project ? projectLabel(project) : ""}
                     >
                       <button
                         className={"check sm" + (task.done ? " checked" : "")}
@@ -59,15 +58,33 @@ export default function DayPanel({ slots, projects, tasks, onUpdateTask, onSave 
                           <Icon name="check" size={11} strokeWidth={2.4} />
                         )}
                       </button>
-                      <span className="slot-task-text">
-                        {project && project.icon ? project.icon + " " : ""}
-                        {task.text}
+                      <span className="slot-task-body">
+                        <span className="slot-task-text">{task.text}</span>
+                        {project && (
+                          <span
+                            className="slot-task-project"
+                            title={projectLabel(project)}
+                          >
+                            {project.icon ? project.icon + " " : ""}
+                            {project.name}
+                          </span>
+                        )}
                       </span>
                     </li>
                   );
                 })}
                 {slotTasks.length === 0 && (
-                  <li className="slot-empty">пусто</li>
+                  <li className="slot-empty">
+                    <button
+                      type="button"
+                      className="slot-empty-add"
+                      onClick={() => setEditingIndex(slot.index)}
+                      aria-label={`Добавить задачи в слот ${slot.index + 1}`}
+                    >
+                      <Icon name="plus" size={14} strokeWidth={1.8} />
+                      <span>добавить</span>
+                    </button>
+                  </li>
                 )}
               </ul>
             </div>

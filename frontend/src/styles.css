@@ -15,6 +15,15 @@
   --red: #c0392b;         /* сигнал «просрочено» */
   --r: 12px;
   --r-sm: 8px;
+
+  /* ---- «Дела на день»: самая светлая приподнятая карточка (SPEC-003) ---- */
+  --day-bg: #ffffff;            /* фон панели — светлее проектных карточек */
+  --day-radius: 18px;           /* скругление крупнее, чем у проектов (--r) */
+  --day-shadow: 0 8px 24px rgba(20, 20, 20, 0.08); /* мягкая крупная тень */
+  --day-accent: var(--gold);    /* акцент «закреплено» (золото из палитры) */
+  --day-accent-bar: 3px;        /* высота верхней акцентной полосы */
+  --day-empty-h: 38px;          /* высота компактного пустого слота (1 строка) */
+  --check-sm: 18px;             /* размер компактного чекбокса слота */
 }
 
 * {
@@ -241,48 +250,63 @@ select:focus {
   display: block;
 }
 
-/* ---------- day panel: выделенная «карточка дня» ----------------------- */
-/* Жирная чёрная рамка + инвертированный заголовок-плашка явно отделяют */
-/* «Дела на день» от обычных проектов в той же чёрно-белой палитре.       */
+/* ---------- day panel: светлая приподнятая «карточка дня» (SPEC-003) ----- */
+/* Без тёмной плашки-заголовка и без жёсткой рамки: самая светлая поверхность */
+/* доски, приподнятая мягкой тенью; «закреплено» — тонкая верхняя полоса.    */
 .day-panel {
-  background: var(--surface);
-  border: 2px solid var(--ink);
-  border-radius: var(--r);
-  padding: 16px;
+  position: relative;
+  background: var(--day-bg);
+  border: none;
+  border-radius: var(--day-radius);
+  padding: 18px 18px 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  overflow: hidden; /* подрезает заголовок-плашку под скруглённую рамку */
-  box-shadow: 0 1px 2px rgba(20, 20, 20, 0.04), 0 10px 28px rgba(20, 20, 20, 0.1);
+  overflow: hidden; /* подрезает верхнюю акцентную полосу под скругление */
+  box-shadow: var(--day-shadow);
+  height: fit-content; /* высота по содержимому, не тянется на пустую зону */
 }
 
-/* Заголовок во всю ширину карточки: белый текст на чёрной плашке. */
+/* Акцент «закреплено»: тонкая верхняя полоса золотом из палитры. */
+.day-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--day-accent-bar);
+  background: var(--day-accent);
+}
+
+/* Лёгкий лейбл-заголовок: без плашки, мелкий с разрядкой + иконка-пин. */
 .day-title {
-  margin: -16px -16px 12px;
-  padding: 10px 16px;
-  font-size: 13px;
-  font-weight: 700;
+  margin: 2px 0 10px;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: var(--ink);
-  color: var(--surface);
+  gap: 7px;
+  background: transparent;
+  color: var(--ink);
 }
 
 .day-title .day-pin {
-  color: var(--surface);
+  color: var(--day-accent);
   line-height: 0;
 }
 
 .slots {
   display: flex;
   flex-direction: column;
+  gap: 8px; /* воздух между слотами вместо жирных линий-разделителей */
 }
 
+/* Разделение слотов воздухом: очень светлый волосяной сепаратор, не жирный. */
 .slot {
-  padding: 10px 0;
+  padding: 6px 0 2px;
   border-top: 1px solid var(--line);
 }
 
@@ -296,11 +320,15 @@ select:focus {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 4px;
+  min-height: 22px;
 }
 
+/* Подпись «Слот N» — мелкий приглушённый лейбл с разрядкой. */
 .slot-name {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .slot-tasks {
@@ -309,28 +337,52 @@ select:focus {
   padding: 0;
   display: flex;
   flex-direction: column;
+  gap: 1px;
 }
 
-/* Строка задачи в слоте — с настоящим чекбоксом выполнения */
+/* Строка задачи в слоте — уплотнённая, с настоящим чекбоксом выполнения */
 .slot-task {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 4px 4px;
+  padding: 3px 4px;
   border-radius: var(--r-sm);
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
 .slot-task:hover {
-  background: rgba(20, 20, 20, 0.04);
+  background: var(--hover);
 }
 
-.slot-task-text {
+.slot-task-body {
   flex: 1;
-  word-break: break-word;
-  cursor: default;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   padding-top: 1px;
+}
+
+/* Текст задачи: перенос максимум на 2 строки, дальше — многоточие. */
+.slot-task-text {
+  cursor: default;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+/* Подпись проекта — мелкая, приглушённая, в одну строку с обрезкой. */
+.slot-task-project {
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .slot-task.done .slot-task-text {
@@ -338,10 +390,36 @@ select:focus {
   color: var(--muted);
 }
 
+/* Пустой слот — компактная строка-приглашение в одну строку (не блок «пусто»). */
 .slot-empty {
-  font-size: 13px;
+  display: flex;
+}
+
+.slot-empty-add {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: var(--day-empty-h);
+  padding: 0 8px;
+  font-size: 12px;
   color: var(--muted);
-  padding: 2px 4px;
+  background: transparent;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--r-sm);
+  line-height: 1;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+}
+
+.slot-empty-add:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+  background: var(--hover);
+}
+
+.slot-empty-add svg {
+  flex: 0 0 auto;
 }
 
 /* ---------- board sections ---------- */
@@ -520,9 +598,11 @@ button.emoji.sel {
   border-color: var(--accent);
 }
 
+/* Чекбокс слота — мельче и тоньше, единый стиль с проектным (--check-sm). */
 .check.sm {
-  width: 16px;
-  height: 16px;
+  width: var(--check-sm);
+  height: var(--check-sm);
+  border-width: 1.5px;
 }
 
 .task-body {
