@@ -164,6 +164,7 @@ export default function Board({ onLoggedOut }) {
           slots={slots}
           projects={projects}
           tasks={tasks}
+          onUpdateTask={updateTask}
           onSave={saveSlot}
         />
         {pinned.map(renderPanel)}

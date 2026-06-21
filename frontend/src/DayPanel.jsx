@@ -1,7 +1,8 @@
 import React, { useState } from "react";
+import Icon from "./Icon.jsx";
 import { projectLabel } from "./helpers.js";
 
-export default function DayPanel({ slots, projects, tasks, onSave }) {
+export default function DayPanel({ slots, projects, tasks, onUpdateTask, onSave }) {
   const [editingIndex, setEditingIndex] = useState(null);
 
   const taskById = new Map(tasks.map((t) => [t.id, t]));
@@ -13,42 +14,65 @@ export default function DayPanel({ slots, projects, tasks, onSave }) {
 
   return (
     <section className="day-panel">
-      <h2 className="day-title">Дела на день</h2>
+      <h2 className="day-title">
+        <span className="day-pin">
+          <Icon name="pin" size={16} />
+        </span>
+        Дела на день
+      </h2>
       <div className="slots">
-        {slots.map((slot) => (
-          <div className="slot" key={slot.index}>
-            <div className="slot-head">
-              <span className="slot-name">Слот {slot.index + 1}</span>
-              <button
-                className="ghost small"
-                onClick={() => setEditingIndex(slot.index)}
-              >
-                Изменить
-              </button>
-            </div>
-            <ul className="slot-tasks">
-              {slot.task_ids
-                .map((id) => taskById.get(id))
-                .filter(Boolean)
-                .map((task) => {
+        {slots.map((slot) => {
+          const slotTasks = slot.task_ids
+            .map((id) => taskById.get(id))
+            .filter(Boolean);
+          return (
+            <div className="slot" key={slot.index}>
+              <div className="slot-head">
+                <span className="slot-name">Слот {slot.index + 1}</span>
+                <button
+                  className="ghost small"
+                  onClick={() => setEditingIndex(slot.index)}
+                >
+                  Изменить
+                </button>
+              </div>
+              <ul className="slot-tasks">
+                {slotTasks.map((task) => {
                   const project = projectById.get(task.project_id);
                   return (
                     <li
                       key={task.id}
-                      className={task.done ? "done" : ""}
+                      className={"slot-task" + (task.done ? " done" : "")}
                       title={project ? projectLabel(project) : ""}
                     >
-                      {project && project.icon ? project.icon + " " : ""}
-                      {task.text}
+                      <button
+                        className={"check sm" + (task.done ? " checked" : "")}
+                        title={task.done ? "Снять отметку" : "Отметить сделанным"}
+                        aria-label={
+                          task.done ? "Снять отметку" : "Отметить сделанным"
+                        }
+                        onClick={() =>
+                          onUpdateTask(task.id, { done: !task.done })
+                        }
+                      >
+                        {task.done && (
+                          <Icon name="check" size={11} strokeWidth={2.4} />
+                        )}
+                      </button>
+                      <span className="slot-task-text">
+                        {project && project.icon ? project.icon + " " : ""}
+                        {task.text}
+                      </span>
                     </li>
                   );
                 })}
-              {slot.task_ids.filter((id) => taskById.has(id)).length === 0 && (
-                <li className="muted empty-task">пусто</li>
-              )}
-            </ul>
-          </div>
-        ))}
+                {slotTasks.length === 0 && (
+                  <li className="slot-empty">пусто</li>
+                )}
+              </ul>
+            </div>
+          );
+        })}
       </div>
 
       {editingIndex !== null && (

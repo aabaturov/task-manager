@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import TaskItem from "./TaskItem.jsx";
+import Icon from "./Icon.jsx";
 
 const QUICK_ICONS = ["📋", "💼", "🏠", "🛒", "💡", "📚", "💪", "✈️", "🎯", "🔧"];
 
@@ -99,23 +100,26 @@ export default function ProjectPanel({
           <button
             className={"icon" + (project.pinned ? " on" : "")}
             title={project.pinned ? "Открепить" : "Закрепить"}
+            aria-label={project.pinned ? "Открепить" : "Закрепить"}
             onClick={() => onUpdateProject(project.id, { pinned: !project.pinned })}
           >
-            📌
+            <Icon name="pin" size={17} />
           </button>
           <button
             className="icon"
             title="Настройки проекта"
+            aria-label="Настройки проекта"
             onClick={() => setEditingProject((v) => !v)}
           >
-            ✎
+            <Icon name="pencil" size={17} />
           </button>
           <button
             className="icon"
             title="Удалить проект"
+            aria-label="Удалить проект"
             onClick={() => onRemoveProject(project)}
           >
-            ×
+            <Icon name="x" size={17} />
           </button>
         </div>
       </div>
@@ -154,7 +158,9 @@ export default function ProjectPanel({
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
-        <button type="submit">+</button>
+        <button type="submit" aria-label="Добавить задачу">
+          <Icon name="plus" size={18} />
+        </button>
       </form>
     </section>
   );

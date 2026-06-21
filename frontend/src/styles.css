@@ -1,13 +1,20 @@
 :root {
-  --bg: #f4f5f7;
-  --panel: #ffffff;
-  --border: #e2e4e8;
-  --text: #1f2329;
-  --muted: #8a8f98;
-  --accent: #3b6ef5;
-  --danger: #e5484d;
-  --warn: #e08600;
-  --gold: #e6a700;
+  --bg: #f5f5f3;          /* тёплая бумага под всем приложением */
+  --surface: #ffffff;     /* панели проектов */
+  --sunk: #ededea;        /* (не используется) */
+  --ink: #1c1c1e;         /* основной текст / чернила */
+  --ink-2: #46464a;       /* вторичные кнопки */
+  --muted: #8c8c88;       /* приглушённый текст, плейсхолдеры */
+  --faint: #b3b3ae;       /* иконки в покое */
+  --line: rgba(20, 20, 20, 0.09);   /* волосяные границы */
+  --line-2: rgba(20, 20, 20, 0.16); /* границы при наведении/фокусе */
+  --hover: rgba(20, 20, 20, 0.045); /* фон строки при наведении */
+  --accent: #1c1c1e;      /* акцент = чернила (кнопка, галочка, фокус) */
+  --accent-strong: #000000;
+  --gold: #bd8b00;        /* сигнал «важное» */
+  --red: #c0392b;         /* сигнал «просрочено» */
+  --r: 12px;
+  --r-sm: 8px;
 }
 
 * {
@@ -19,7 +26,8 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif;
   background: var(--bg);
-  color: var(--text);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
 }
 
 body.dragging-active {
@@ -27,20 +35,24 @@ body.dragging-active {
   cursor: grabbing;
 }
 
+/* ---------- buttons ---------- */
 button {
   cursor: pointer;
-  border: 1px solid var(--border);
-  background: var(--panel);
-  border-radius: 8px;
+  border: 1px solid var(--line-2);
+  background: transparent;
+  color: var(--ink);
+  border-radius: var(--r-sm);
   padding: 8px 14px;
   font-size: 14px;
-  transition: background 0.15s, border-color 0.15s;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.12s;
 }
 
 button:hover {
-  border-color: var(--accent);
+  border-color: var(--ink);
 }
 
+/* Главное действие — акцентный цвет палитры */
 button[type="submit"],
 .topbar-actions > button:first-child {
   background: var(--accent);
@@ -48,8 +60,27 @@ button[type="submit"],
   border-color: var(--accent);
 }
 
+button[type="submit"]:hover,
+.topbar-actions > button:first-child:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+button[type="submit"]:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 button.ghost {
   background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+}
+
+button.ghost:hover {
+  border-color: transparent;
+  color: var(--ink);
+  background: var(--hover);
 }
 
 button.small {
@@ -57,17 +88,22 @@ button.small {
   font-size: 13px;
 }
 
+/* Иконки-кнопки */
 button.icon {
   border: none;
   background: transparent;
-  color: var(--muted);
-  font-size: 17px;
-  line-height: 1;
-  padding: 2px 6px;
+  color: var(--faint);
+  padding: 4px;
+  border-radius: var(--r-sm);
+  line-height: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 button.icon:hover {
-  color: var(--accent);
+  color: var(--ink);
+  background: var(--hover);
 }
 
 button.icon.on {
@@ -78,20 +114,28 @@ button.icon.star.on {
   color: var(--gold);
 }
 
+/* ---------- inputs ---------- */
 input,
 select {
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
   padding: 9px 12px;
   font-size: 14px;
+  font-family: inherit;
   width: 100%;
   outline: none;
   background: #fff;
+  color: var(--ink);
+}
+
+input::placeholder {
+  color: var(--muted);
 }
 
 input:focus,
 select:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(20, 20, 20, 0.06);
 }
 
 .muted {
@@ -99,9 +143,9 @@ select:focus {
 }
 
 .error {
-  background: #fdecec;
-  color: var(--danger);
-  border-radius: 8px;
+  background: #fbeceb;
+  color: var(--red);
+  border-radius: var(--r-sm);
   padding: 10px 14px;
   margin: 12px 0;
   font-size: 14px;
@@ -117,21 +161,21 @@ select:focus {
 }
 
 .login-card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
   padding: 32px;
   width: 100%;
   max-width: 340px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
 }
 
 .login-card h1 {
   margin: 0 0 6px;
   font-size: 22px;
+  font-weight: 500;
   text-align: center;
 }
 
@@ -139,34 +183,35 @@ select:focus {
 .app {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 24px 20px 48px;
 }
 
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   gap: 12px;
   flex-wrap: wrap;
 }
 
 .topbar h1 {
-  font-size: 22px;
+  font-size: 19px;
+  font-weight: 500;
   margin: 0;
 }
 
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
 .clock {
   font-variant-numeric: tabular-nums;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
   white-space: nowrap;
 }
 
@@ -176,16 +221,16 @@ select:focus {
 }
 
 .empty {
-  margin-top: 40px;
+  margin-top: 48px;
   text-align: center;
 }
 
-/* ---------- pinned zone (SPEC-001 F6): day panel + pinned projects ------ */
+/* ---------- pinned zone: day panel + pinned projects ---------- */
+/* Раньше — серый бокс; теперь просто сетка, поверхности различают сами панели. */
 .pinned-zone {
-  background: #e9ecf1;
-  border-radius: 16px;
-  padding: 12px;
-  margin-bottom: 20px;
+  background: transparent;
+  padding: 0;
+  margin-bottom: 24px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
@@ -196,46 +241,66 @@ select:focus {
   display: block;
 }
 
-/* ---------- day panel (SPEC-001 F8): yellow card, vertical slots -------- */
+/* ---------- day panel: выделенная «карточка дня» ----------------------- */
+/* Жирная чёрная рамка + инвертированный заголовок-плашка явно отделяют */
+/* «Дела на день» от обычных проектов в той же чёрно-белой палитре.       */
 .day-panel {
-  background: #fff8e1; /* soft warm yellow — only the panel is tinted */
-  border: 1px solid #f0e2ad;
-  border-radius: 14px;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  border-radius: var(--r);
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
+  overflow: hidden; /* подрезает заголовок-плашку под скруглённую рамку */
+  box-shadow: 0 1px 2px rgba(20, 20, 20, 0.04), 0 10px 28px rgba(20, 20, 20, 0.1);
 }
 
+/* Заголовок во всю ширину карточки: белый текст на чёрной плашке. */
 .day-title {
-  margin: 0;
-  font-size: 16px;
+  margin: -16px -16px 12px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.day-title .day-pin {
+  color: var(--surface);
+  line-height: 0;
 }
 
 .slots {
   display: flex;
   flex-direction: column;
-  gap: 10px;
 }
 
 .slot {
-  border: 1px solid #efe3b8;
-  border-radius: 10px;
-  padding: 10px;
-  background: #fffdf5;
-  min-height: 70px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.slot:first-child {
+  border-top: none;
+  padding-top: 2px;
 }
 
 .slot-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .slot-name {
-  font-weight: 600;
-  font-size: 14px;
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .slot-tasks {
@@ -244,25 +309,51 @@ select:focus {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 14px;
 }
 
-.slot-tasks li.done {
+/* Строка задачи в слоте — с настоящим чекбоксом выполнения */
+.slot-task {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 4px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.slot-task:hover {
+  background: rgba(20, 20, 20, 0.04);
+}
+
+.slot-task-text {
+  flex: 1;
+  word-break: break-word;
+  cursor: default;
+  padding-top: 1px;
+}
+
+.slot-task.done .slot-task-text {
   text-decoration: line-through;
   color: var(--muted);
 }
 
+.slot-empty {
+  font-size: 13px;
+  color: var(--muted);
+  padding: 2px 4px;
+}
+
 /* ---------- board sections ---------- */
 .section {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .section-title {
-  font-size: 15px;
+  font-size: 13px;
   color: var(--muted);
-  margin: 0 0 10px;
-  font-weight: 600;
+  margin: 0 0 12px;
+  font-weight: 500;
 }
 
 .board {
@@ -273,13 +364,13 @@ select:focus {
 }
 
 .panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 14px 14px 10px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .panel-head {
@@ -287,11 +378,13 @@ select:focus {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  min-height: 26px;
 }
 
 .panel-head h2 {
   margin: 0;
-  font-size: 17px;
+  font-size: 15px;
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -301,19 +394,19 @@ select:focus {
 }
 
 .proj-icon {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .panel-head-actions {
   display: flex;
-  gap: 2px;
+  gap: 1px;
   flex: 0 0 auto;
 }
 
 /* ---------- project editor ---------- */
 .project-editor {
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
   padding: 12px;
   background: var(--bg);
   display: flex;
@@ -343,11 +436,12 @@ select:focus {
 button.emoji {
   padding: 4px 8px;
   font-size: 16px;
+  border-color: var(--line-2);
 }
 
 button.emoji.sel {
-  border-color: var(--accent);
-  background: #eaf0ff;
+  border-color: var(--ink);
+  background: var(--hover);
 }
 
 .editor-actions {
@@ -362,62 +456,63 @@ button.emoji.sel {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
 }
 
 .task {
-  background: var(--bg);
-  border-radius: 8px;
-  padding: 6px 8px;
+  background: transparent;
+  border-radius: var(--r-sm);
+  padding: 7px 6px;
   border: 1px solid transparent;
 }
 
-.task.important {
-  border-color: var(--gold);
-  background: #fff9e6;
-}
-
-.task.overdue {
-  border-color: var(--danger);
+.task:hover {
+  background: var(--hover);
 }
 
 .task.dragging {
   opacity: 0.5;
   border-style: dashed;
-  border-color: var(--accent);
+  border-color: var(--line-2);
+  background: var(--surface);
 }
 
 .task-row {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 7px;
 }
 
 .drag-handle {
   border: none;
   background: transparent;
-  color: var(--muted);
+  color: var(--faint);
   cursor: grab;
-  padding: 0 2px;
-  font-size: 14px;
-  line-height: 1;
-  letter-spacing: -2px;
+  padding: 0;
+  margin-top: 2px;
+  line-height: 0;
+  display: flex;
   touch-action: none;
+  flex: 0 0 auto;
 }
 
 .check {
   flex: 0 0 auto;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
   border-radius: 50%;
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--line-2);
   background: #fff;
   padding: 0;
-  font-size: 13px;
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  line-height: 0;
+}
+
+.check:hover {
+  border-color: var(--accent);
 }
 
 .check.checked {
@@ -425,11 +520,30 @@ button.emoji.sel {
   border-color: var(--accent);
 }
 
-.task-text {
+.check.sm {
+  width: 16px;
+  height: 16px;
+}
+
+.task-body {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.task-text {
   word-break: break-word;
   font-size: 14px;
+  line-height: 1.45;
   cursor: text;
+}
+
+.task-star-inline {
+  color: var(--gold);
+  margin-right: 5px;
+  vertical-align: -2px;
 }
 
 .task.done .task-text {
@@ -449,30 +563,27 @@ button.emoji.sel {
 }
 
 .task-error {
-  color: var(--danger);
+  color: var(--red);
   font-size: 12px;
-  margin: 4px 0 0 26px;
+  margin: 4px 0 0 0;
 }
 
 .task-deadline {
-  margin: 4px 0 0 26px;
+  margin: 2px 0 0 0;
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .deadline-badge {
-  color: var(--warn);
-  background: #fff3e0;
-  border-radius: 6px;
-  padding: 1px 8px;
+  color: var(--muted);
 }
 
 .deadline-badge.overdue {
-  color: var(--danger);
-  background: #fdecec;
+  color: var(--red);
+  font-weight: 500;
 }
 
 .deadline-edit {
@@ -490,30 +601,49 @@ button.emoji.sel {
   background: transparent !important;
   border: none !important;
   font-size: 13px;
-  padding: 4px 8px;
+  padding: 6px 6px;
+  color: var(--muted);
 }
 
 .add-task {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  margin-top: 4px;
 }
 
 .add-task input {
   flex: 1;
+  border-color: transparent;
+  background: var(--bg);
+}
+
+.add-task input:focus {
+  background: #fff;
+  border-color: var(--ink);
 }
 
 .add-task button {
   flex: 0 0 auto;
-  width: 40px;
-  font-size: 18px;
+  width: 38px;
   padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--faint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-task button:hover {
+  color: var(--ink);
+  background: var(--hover);
 }
 
 /* ---------- modal (slot editor) ---------- */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(20, 20, 20, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -523,7 +653,7 @@ button.emoji.sel {
 
 .modal {
   background: #fff;
-  border-radius: 14px;
+  border-radius: var(--r);
   padding: 20px;
   width: 100%;
   max-width: 480px;
@@ -535,7 +665,8 @@ button.emoji.sel {
 
 .modal h3 {
   margin: 0;
-  font-size: 17px;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .modal-body {
@@ -546,7 +677,7 @@ button.emoji.sel {
 }
 
 .select-group-title {
-  font-weight: 600;
+  font-weight: 500;
   font-size: 14px;
   margin-bottom: 4px;
 }
@@ -561,6 +692,7 @@ button.emoji.sel {
 
 .select-row input {
   width: auto;
+  accent-color: var(--ink);
 }
 
 .select-row .done {
@@ -573,13 +705,44 @@ button.emoji.sel {
   font-size: 12px;
 }
 
+/* ---------- hover-reveal: контролы прячем только там, где есть курсор ---- */
+/* На сенсорных экранах (hover:none) кнопки видны всегда — управление пальцем. */
+@media (hover: hover) {
+  .task-actions,
+  .drag-handle {
+    opacity: 0;
+  }
+  .task:hover .task-actions,
+  .task:hover .drag-handle,
+  .task:focus-within .task-actions,
+  .task:focus-within .drag-handle {
+    opacity: 1;
+  }
+  .panel-head-actions {
+    opacity: 0;
+    transition: opacity 0.12s;
+  }
+  .panel:hover .panel-head-actions,
+  .panel:focus-within .panel-head-actions {
+    opacity: 1;
+  }
+  .slot-head .ghost {
+    opacity: 0;
+    transition: opacity 0.12s;
+  }
+  .slot:hover .slot-head .ghost,
+  .slot:focus-within .slot-head .ghost {
+    opacity: 1;
+  }
+}
+
 /* ---------- responsive: stack on phones ---------- */
 @media (max-width: 640px) {
-  .board {
-    grid-template-columns: 1fr;
-  }
-  /* Zone collapses to a column: day panel on top, then pinned projects. */
+  .board,
   .pinned-zone {
     grid-template-columns: 1fr;
+  }
+  .app {
+    padding: 16px 14px 40px;
   }
 }
