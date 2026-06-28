@@ -24,7 +24,7 @@ def test_requires_auth():
 
 def test_project_crud_and_duplicate(client):
     p = _project(client, "Inbox")
-    assert p["type"] == "local"
+    assert p["type"] == "temporary"  # SPEC-004: default renamed
     assert p["icon"] is None
     assert p["pinned"] is False
     # duplicate name
@@ -33,9 +33,9 @@ def test_project_crud_and_duplicate(client):
 
 # ----------------------------------------------- Feature 1: project icons
 def test_create_project_with_icon_and_type(client):
-    p = _project(client, "Work", icon="💼", type="global")
+    p = _project(client, "Work", icon="💼", type="permanent")
     assert p["icon"] == "💼"
-    assert p["type"] == "global"
+    assert p["type"] == "permanent"
 
 
 def test_patch_icon_set_and_clear(client):
@@ -68,10 +68,10 @@ def test_pin_limit_three(client):
 
 
 def test_pin_keeps_type(client):
-    p = _project(client, "Glob", type="global")
+    p = _project(client, "Glob", type="permanent")
     client.patch(f"/api/projects/{p['id']}", json={"pinned": True})
     r = client.patch(f"/api/projects/{p['id']}", json={"pinned": False})
-    assert r.json()["type"] == "global"  # type preserved across pin/unpin
+    assert r.json()["type"] == "permanent"  # type preserved across pin/unpin
 
 
 # ------------------------------------------------ Feature 5: ordering

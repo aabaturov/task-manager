@@ -169,7 +169,7 @@ export default function ProjectPanel({
 function ProjectEditor({ project, onSave, onCancel }) {
   const [name, setName] = useState(project.name);
   const [icon, setIcon] = useState(project.icon || "");
-  const [type, setType] = useState(project.type || "local");
+  const [type, setType] = useState(project.type || "temporary");
   const [error, setError] = useState("");
 
   async function save() {
@@ -220,8 +220,8 @@ function ProjectEditor({ project, onSave, onCancel }) {
       <label>
         Тип
         <select value={type} onChange={(e) => setType(e.target.value)}>
-          <option value="local">Локальный</option>
-          <option value="global">Глобальный</option>
+          <option value="temporary">Временный</option>
+          <option value="permanent">Постоянный</option>
         </select>
       </label>
 

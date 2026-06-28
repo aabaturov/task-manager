@@ -11,6 +11,12 @@ class Settings:
         self.telegram_allowed_user_id = self._int_or_none(
             os.environ.get("TELEGRAM_ALLOWED_USER_ID")
         )
+        # SPEC-004 Feature 3/4: a single application timezone used to interpret
+        # event dates and to schedule the bot's "day before" reminders.
+        self.timezone = os.environ.get("APP_TIMEZONE", "UTC")
+        # Time of day (HH:MM, app timezone) when the bot sends the reminder for
+        # the next day's events.
+        self.reminder_time = os.environ.get("REMINDER_TIME", "20:00")
 
     @staticmethod
     def _int_or_none(value: str | None) -> int | None:

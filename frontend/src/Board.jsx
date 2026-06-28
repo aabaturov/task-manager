@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { api } from "./api.js";
 import ProjectPanel from "./ProjectPanel.jsx";
 import DayPanel from "./DayPanel.jsx";
+import LightTasksPanel from "./LightTasksPanel.jsx";
+import CalendarPanel from "./CalendarPanel.jsx";
 
 function HeaderClock() {
   // Isolated so the per-second tick does not re-render the whole board.
@@ -25,18 +27,24 @@ export default function Board({ onLoggedOut }) {
     { index: 1, task_ids: [] },
     { index: 2, task_ids: [] },
   ]);
+  const [lightTasks, setLightTasks] = useState([]);
+  const [events, setEvents] = useState([]);
   const [error, setError] = useState("");
 
   async function reload() {
     try {
-      const [p, t, s] = await Promise.all([
+      const [p, t, s, l, e] = await Promise.all([
         api.listProjects(),
         api.listTasks(),
         api.getDaySlots(),
+        api.listLightTasks(),
+        api.listEvents(),
       ]);
       setProjects(p);
       setTasks(t);
       setSlots(s);
+      setLightTasks(l);
+      setEvents(e);
     } catch (err) {
       if (err.status === 401) onLoggedOut();
       else setError(err.message);
@@ -51,7 +59,7 @@ export default function Board({ onLoggedOut }) {
     const name = window.prompt("Название проекта:");
     if (!name || !name.trim()) return;
     try {
-      await api.createProject(name.trim(), null, "local");
+      await api.createProject(name.trim(), null, "temporary");
       reload();
     } catch (err) {
       alert(err.message);
@@ -100,20 +108,53 @@ export default function Board({ onLoggedOut }) {
     reload();
   }
 
+  // ----- light tasks (SPEC-004 Feature 2) ---------------------------------
+  async function addLightTask(text) {
+    await api.createLightTask(text);
+    reload();
+  }
+  async function toggleLightTask(id, done) {
+    await api.updateLightTask(id, { done });
+    reload();
+  }
+  async function removeLightTask(id) {
+    await api.deleteLightTask(id);
+    reload();
+  }
+
+  // ----- calendar events (SPEC-004 Feature 3) -----------------------------
+  async function createEvent(text, eventDate, eventTime) {
+    await api.createEvent(text, eventDate, eventTime);
+    reload();
+  }
+  async function updateEvent(id, patch) {
+    await api.updateEvent(id, patch);
+    await reload();
+  }
+  async function removeEvent(id) {
+    await api.deleteEvent(id);
+    reload();
+  }
+
   async function logout() {
     await api.logout();
     onLoggedOut();
   }
 
-  // ----- board organisation (SPEC-001 Feature 6) --------------------------
-  // Pinned zone: day panel (always first) + pinned projects (order of pinning).
-  // Normal board below: unpinned projects, local then global.
+  // ----- board organisation (SPEC-004 Feature 1) --------------------------
+  // Board below the three top blocks, split into groups:
+  //   pinned (default per spec note, awaiting confirmation) -> temporary ->
+  //   permanent. Empty groups are not rendered.
   const pinned = projects
     .filter((p) => p.pinned)
     .sort((a, b) => (a.pinned_at || "").localeCompare(b.pinned_at || ""));
-  const local = projects.filter((p) => !p.pinned && p.type === "local");
-  const global = projects.filter((p) => !p.pinned && p.type === "global");
-  const showGroupHeaders = local.length > 0 && global.length > 0;
+  const temporary = projects.filter((p) => !p.pinned && p.type === "temporary");
+  const permanent = projects.filter((p) => !p.pinned && p.type === "permanent");
+  // Show group headers when more than one group is non-empty.
+  const nonEmptyGroups = [pinned, temporary, permanent].filter(
+    (g) => g.length > 0
+  ).length;
+  const showGroupHeaders = nonEmptyGroups > 1;
 
   function renderPanel(project) {
     return (
@@ -158,8 +199,8 @@ export default function Board({ onLoggedOut }) {
 
       {error && <div className="error">{error}</div>}
 
-      {/* Pinned zone — always present, day panel is its first element. */}
-      <div className="pinned-zone">
+      {/* SPEC-004 Feature 1: three named top blocks in a row. */}
+      <div className="top-blocks">
         <DayPanel
           slots={slots}
           projects={projects}
@@ -167,13 +208,26 @@ export default function Board({ onLoggedOut }) {
           onUpdateTask={updateTask}
           onSave={saveSlot}
         />
-        {pinned.map(renderPanel)}
+        <LightTasksPanel
+          items={lightTasks}
+          onAdd={addLightTask}
+          onToggle={toggleLightTask}
+          onDelete={removeLightTask}
+        />
+        <CalendarPanel
+          events={events}
+          projects={projects}
+          onCreateEvent={createEvent}
+          onUpdateEvent={updateEvent}
+          onDeleteEvent={removeEvent}
+        />
       </div>
 
-      {/* Normal board below the zone. */}
+      {/* Project board below the three blocks. */}
       <div className="normal-board">
-        {renderGroup("Локальные", local)}
-        {renderGroup("Глобальные", global)}
+        {renderGroup("Закреплённые", pinned)}
+        {renderGroup("Временные", temporary)}
+        {renderGroup("Постоянные", permanent)}
       </div>
 
       {projects.length === 0 && (

@@ -55,4 +55,33 @@ export const api = {
   getDaySlots: () => request("GET", "/api/day-slots"),
   setDaySlot: (index, taskIds) =>
     request("PUT", `/api/day-slots/${index}`, { task_ids: taskIds }),
+
+  // light tasks ("не забыть") — SPEC-004 Feature 2
+  listLightTasks: () => request("GET", "/api/light-tasks"),
+  createLightTask: (text) => request("POST", "/api/light-tasks", { text }),
+  updateLightTask: (id, patch) =>
+    request("PATCH", `/api/light-tasks/${id}`, patch),
+  deleteLightTask: (id) => request("DELETE", `/api/light-tasks/${id}`),
+
+  // calendar events — SPEC-004 Feature 3
+  listEvents: (start, end) => {
+    const q = new URLSearchParams();
+    if (start) q.set("start", start);
+    if (end) q.set("end", end);
+    const qs = q.toString();
+    return request("GET", "/api/events" + (qs ? `?${qs}` : ""));
+  },
+  createEvent: (text, eventDate, eventTime) =>
+    request("POST", "/api/events", {
+      text,
+      event_date: eventDate,
+      event_time: eventTime,
+    }),
+  updateEvent: (id, patch) => request("PATCH", `/api/events/${id}`, patch),
+  deleteEvent: (id) => request("DELETE", `/api/events/${id}`),
+  setTaskEvent: (taskId, eventDate, eventTime) =>
+    request("PUT", `/api/tasks/${taskId}/event`, {
+      event_date: eventDate,
+      event_time: eventTime,
+    }),
 };

@@ -3,4 +3,6 @@ uvicorn[standard]==0.34.0
 sqlalchemy==2.0.36
 pydantic==2.10.4
 itsdangerous==2.2.0
-python-telegram-bot==22.0
+# [job-queue] pulls in APScheduler, required for the bot's reminder scheduler
+# (SPEC-004 Feature 4). Without it, Application.build() fails at startup.
+python-telegram-bot[job-queue]==22.0

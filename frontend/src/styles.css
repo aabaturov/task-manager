@@ -16,8 +16,10 @@
   --r: 12px;
   --r-sm: 8px;
 
-  /* ---- «Дела на день»: самая светлая приподнятая карточка (SPEC-003) ---- */
-  --day-bg: #ffffff;            /* фон панели — светлее проектных карточек */
+  /* ---- «Дела на день»: приподнятая карточка (SPEC-003), жёлтая (SPEC-004) - */
+  /* SPEC-004 F1: только блок «Дела на день» выделен жёлтым; остальные блоки  */
+  /* (Лёгкие дела, Календарь) — обычная светлая схема.                        */
+  --day-bg: #fff8e1;            /* мягкий жёлтый фон панели «Дела на день» */
   --day-radius: 18px;           /* скругление крупнее, чем у проектов (--r) */
   --day-shadow: 0 8px 24px rgba(20, 20, 20, 0.08); /* мягкая крупная тень */
   --day-accent: var(--gold);    /* акцент «закреплено» (золото из палитры) */
@@ -234,20 +236,241 @@ select:focus {
   text-align: center;
 }
 
-/* ---------- pinned zone: day panel + pinned projects ---------- */
-/* Раньше — серый бокс; теперь просто сетка, поверхности различают сами панели. */
-.pinned-zone {
+/* ---------- top blocks: «Дела на день» / «Лёгкие дела» / «Календарь» ----- */
+/* SPEC-004 F1: три именованных блока в ряд; на телефоне — в столбик (ниже). */
+.top-blocks {
   background: transparent;
   padding: 0;
   margin-bottom: 24px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: 1fr 1fr 1.4fr; /* календарь чуть шире */
   gap: 16px;
   align-items: start;
 }
 
 .normal-board {
   display: block;
+}
+
+/* Общая карточка для «Лёгких дел» и «Календаря» — обычная светлая схема. */
+.block {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 14px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: fit-content;
+}
+
+.block-title {
+  margin: 2px 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+/* ---------- «Лёгкие дела (не забыть)» (SPEC-004 F2) ---------- */
+.light-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.light-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 2px;
+  border-radius: var(--r-sm);
+}
+
+.light-item:hover {
+  background: var(--hover);
+}
+
+.light-text {
+  flex: 1 1 auto;
+  font-size: 14px;
+  word-break: break-word;
+}
+
+.light-item.done .light-text {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.light-empty {
+  padding: 6px 2px;
+  font-size: 14px;
+}
+
+.add-light {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.add-light input {
+  flex: 1 1 auto;
+}
+
+/* ---------- «Календарь» (SPEC-004 F3) ---------- */
+.cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cal-nav {
+  display: flex;
+  gap: 6px;
+}
+
+.cal-month {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 2px 0 6px;
+}
+
+.cal-weekdays,
+.cal-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.cal-weekday {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  padding: 2px 0;
+}
+
+.cal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cal-cell {
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  min-height: 64px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  text-align: left;
+  font-size: 11px;
+  overflow: hidden;
+}
+
+.cal-cell:hover {
+  border-color: var(--line-2);
+  background: var(--hover);
+}
+
+.cal-cell.out {
+  opacity: 0.45;
+}
+
+.cal-cell.today {
+  border-color: var(--day-accent);
+  box-shadow: inset 0 0 0 1px var(--day-accent);
+}
+
+.cal-daynum {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.cal-events {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.cal-ev {
+  font-size: 10px;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: var(--hover);
+  border-radius: 4px;
+  padding: 0 3px;
+}
+
+.cal-ev.done {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.cal-more {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* День — раскрытие в модалке: полный список событий + форма создания. */
+.day-events {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.day-event {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 2px;
+}
+
+.day-event.done .day-event-text {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.day-event-time {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.day-event-text {
+  flex: 1 1 auto;
+  word-break: break-word;
+}
+
+.day-event-project {
+  font-size: 12px;
+  color: var(--muted);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.add-event {
+  display: flex;
+  gap: 8px;
+}
+
+.add-event input[type="text"] {
+  flex: 1 1 auto;
 }
 
 /* ---------- day panel: светлая приподнятая «карточка дня» (SPEC-003) ----- */
@@ -817,9 +1040,16 @@ button.emoji.sel {
 }
 
 /* ---------- responsive: stack on phones ---------- */
+@media (max-width: 980px) {
+  /* SPEC-004 F1: три блока перестраиваются в столбик на узких экранах. */
+  .top-blocks {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 640px) {
   .board,
-  .pinned-zone {
+  .top-blocks {
     grid-template-columns: 1fr;
   }
   .app {

@@ -57,16 +57,20 @@ def test_button_constants_are_used_in_filters():
     """Captions and filter strings are the same constants (SPEC-002 F1)."""
     assert bot_module.BTN_TASKS == "📋 Все задачи"
     assert bot_module.BTN_DAY == "📅 Дела на день"
+    assert bot_module.BTN_LIGHT == "📝 Не забыть"
 
 
 def test_reply_keyboard_layout():
     kb = bot_module._reply_keyboard()
     assert kb.resize_keyboard is True
     assert kb.is_persistent is True
-    # Two buttons in a single row.
-    assert len(kb.keyboard) == 1
-    captions = [btn.text for btn in kb.keyboard[0]]
-    assert captions == [bot_module.BTN_TASKS, bot_module.BTN_DAY]
+    # SPEC-004 adds the «Не забыть» button: row 1 has the two original buttons,
+    # row 2 holds the light-task button.
+    assert len(kb.keyboard) == 2
+    row1 = [btn.text for btn in kb.keyboard[0]]
+    row2 = [btn.text for btn in kb.keyboard[1]]
+    assert row1 == [bot_module.BTN_TASKS, bot_module.BTN_DAY]
+    assert row2 == [bot_module.BTN_LIGHT]
 
 
 def test_owner_check():

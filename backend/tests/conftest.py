@@ -19,7 +19,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 
 from app.database import SessionLocal  # noqa: E402
 from app.main import app  # noqa: E402
-from app.models import DaySlotItem, Project, Task  # noqa: E402
+from app.models import DaySlotItem, LightTask, Project, Task  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
@@ -28,6 +28,7 @@ def clean_db():
     db = SessionLocal()
     try:
         db.query(DaySlotItem).delete()
+        db.query(LightTask).delete()
         db.query(Task).delete()
         db.query(Project).delete()
         db.commit()
